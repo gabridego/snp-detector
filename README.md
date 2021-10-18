@@ -13,6 +13,9 @@ python main.py -p salmonella-enterica.reads.fna -t <hash/tree> -k 30
 ``
 
 ## Authors
-Enrico Agrippino  
-Gabriele Degola  
-Sophie Zhang
+The project is presented by the CEO, CTO and CHO of DZA Computing:
+- Sophie Zhang
+- Enrico Agrippino
+- Gabriele Degola
+
+© 2021 DZA Computing. All rights reserved.
