@@ -76,7 +76,7 @@ def use_hash(args):
     """
     Collect patterns of length K, counting them in an hash table (dictionary)
     """
-    seqs = {}
+    hash_tab = {}
     K = args.k
 
     start = time.time()
@@ -84,13 +84,13 @@ def use_hash(args):
                                   "fasta"):
         seq = str(record.seq)
         for i in range(len(seq) - K + 1):
-            chunk = seq[i:i + K]
-            if chunk not in seqs:
-                seqs[chunk] = 0
-            seqs[chunk] += 1
+            kmer = seq[i:i + K]
+            if kmer not in hash_tab:
+                hash_tab[kmer] = 0
+            hash_tab[kmer] += 1
     end = time.time()
 
-    print(f"{len(seqs)} patterns of {K} characters collected in {round(end - start, 2)} seconds.")
+    print(f"{len(hash_tab)} patterns of {K} characters collected in {round(end - start, 2)} seconds.")
 
 
 if __name__ == '__main__':
