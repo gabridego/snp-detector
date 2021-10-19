@@ -12,6 +12,9 @@ is always `K`. This is computationally expensive.
 python main.py -p salmonella-enterica.reads.fna -t <hash/tree> -k 30
 ``
 
+Data is not provided, please download it from the
+[course website](https://clovisg.github.io/teaching/protein-structure-prediction/sequences/).
+
 ## Authors
 The project is presented by the CEO, CTO and CHO of DZA Computing:
 - Sophie Zhang
