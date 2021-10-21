@@ -31,7 +31,7 @@ def parse_kmers(filename: str, k: int):
             kmers[kmer] += 1
     end = time.time()
 
-    print(f"{len(kmers)} patterns of {k} characters extracted in {round(end - start, 2)} seconds.")
+    print(f"{len(kmers)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
     return kmers
 
@@ -40,7 +40,7 @@ def filter_kmers(kmers: Dict[str, int], threshold=1):
     filtered_kmers = {k: v for k, v in kmers.items() if v > threshold}
     kmers.clear()
     kmers.update(filtered_kmers)
-    print(f"{len(kmers)} patterns kept after filtering (threshold={threshold})")
+    print(f"{len(kmers)} {len(list(kmers.keys())[0])}-mers kept after filtering (threshold={threshold})")
 
 
 def main(args):
