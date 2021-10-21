@@ -2,17 +2,15 @@
 
 ## Instructions
 
-With `hash` option, store patterns in an hash table (python dictionary), where the key is the sequence of nucleotides
-and the value is the number of occurrences in the full file. The value of each pattern can be accessed in constant time.
-
-With `tree` option, store patterns in four trees, where the roots are the existing nucleotides. The depth of the trees
-is always `K`. This is computationally expensive.
+Detected K-mers are stored in an hash table (python dictionary) for each strain, where the key is the K-mer and the
+value is the number of occurrences in the full file. The number of occurrences of each K-mer can therefore be accessed
+in constant time.
 
 ``
-python main.py -p salmonella-enterica.reads.fna -t <hash/tree> -k 30
+python main.py -p data/salmonella-enterica.reads.fna data/salmonella-enterica-variant.reads.fna -k 20 -v
 ``
 
-Data is not provided, please download it from the
+Data is not included in this repo, please download it from the
 [course website](https://clovisg.github.io/teaching/protein-structure-prediction/sequences/).
 
 ## Authors

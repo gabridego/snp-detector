@@ -1,102 +1,82 @@
 import argparse
+import os
 import time
+from typing import Dict
 
 import Bio.SeqIO
 
-
-class Node(object):
-    """
-    Node object for tree building
-    """
-    def __init__(self, data):
-        self.data = data
-        self.children = {}
-        self.parent = None
-        self.count = 0
-
-    def __str__(self):
-        return f"{self.data}: parent {self.parent.data}, children {list(self.children.keys())}"
-
-    def add_child(self, obj):
-        self.children[obj.data] = obj
-
-    def set_parent(self, obj):
-        self.parent = obj
-
-    def get_child(self, data):
-        return self.children[data]
+from utils import plot_frequency
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Salmonella outbreak")
-    parser.add_argument('-p', '--path', nargs='+', help='Paths to FASTA files (max 2)')
-    parser.add_argument('-t', '--type', nargs='?', choices=['tree', 'hash'],
-                        default='hash', help='What to do with the files')
-    parser.add_argument('-k', type=int, nargs='?', default=30, help='Length of patterns')
+    parser = argparse.ArgumentParser(description="SNP detector")
+    parser.add_argument('-p', '--path', nargs=2, help='Paths to FASTA files')
+    parser.add_argument('-k', type=int, nargs='?', default=20, help='Length of patterns')
+    parser.add_argument('-v', '--visualize', default=False, action='store_true', help='Plot intermediate results')
     return parser.parse_args()
 
 
-def use_trees(args):
-    """
-    Build tree for nucleotide patterns, of depth K
-    """
-    seqs = []
+def parse_kmers(filename: str, k: int):
+    kmers = {}
 
-    for record in Bio.SeqIO.parse(args.path[0],
-                                  "fasta"):
-        seqs.append(str(record.seq))
-
-    roots = {}
-    K = args.k
-    leaves = set()
-
+    print(f"start reading {os.path.basename(args.path[0])}...")
     start = time.time()
-    for seq in seqs:
-        for i in range(len(seq) - K + 1):
-            s = seq[i:i + K]
-            if s[0] not in roots:
-                roots[s[0]] = Node(s[0])
-            parent = roots[s[0]]
-            for j in range(1, len(s)):
-                if s[j] not in parent.children:
-                    new_node = Node(s[j])
-                    parent.add_child(new_node)
-                    new_node.set_parent(parent)
-                parent = parent.get_child(s[j])
-            parent.count += 1
-            leaves.add(parent)
+    for record in Bio.SeqIO.parse(filename,
+                                  "fasta"):
+        seq = str(record.seq)
+        for i in range(len(seq) - k + 1):
+            kmer = seq[i:i + k]
+            if kmer not in kmers:
+                kmers[kmer] = 0
+            kmers[kmer] += 1
     end = time.time()
 
-    print(f"tree built in {round(end - start, 2)} seconds.")
+    print(f"{len(kmers)} patterns of {k} characters extracted in {round(end - start, 2)} seconds.")
 
-    return roots
+    return kmers
 
 
-def use_hash(args):
+def filter_kmers(kmers: Dict[str, int], threshold=1):
+    filtered_kmers = {k: v for k, v in kmers.items() if v > threshold}
+    kmers.clear()
+    kmers.update(filtered_kmers)
+    print(f"{len(kmers)} patterns kept after filtering (threshold={threshold})")
+
+
+def main(args):
     """
     Collect patterns of length K, counting them in an hash table (dictionary)
     """
-    hash_tab = {}
-    K = args.k
+    k = args.k
 
-    start = time.time()
-    for record in Bio.SeqIO.parse(args.path[0],
-                                  "fasta"):
-        seq = str(record.seq)
-        for i in range(len(seq) - K + 1):
-            kmer = seq[i:i + K]
-            if kmer not in hash_tab:
-                hash_tab[kmer] = 0
-            hash_tab[kmer] += 1
-    end = time.time()
+    # read and filter wild strain
+    wild_kmers = parse_kmers(args.path[0], k)
 
-    print(f"{len(hash_tab)} patterns of {K} characters collected in {round(end - start, 2)} seconds.")
+    if args.visualize:
+        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain")
+
+    filter_kmers(wild_kmers)
+
+    if args.visualize:
+        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain,"
+                                   "after error filtering")
+
+    # read and filter mutated strain
+    mut_kmers = parse_kmers(args.path[1], k)
+
+    if args.visualize:
+        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain")
+
+    filter_kmers(mut_kmers)
+
+    if args.visualize:
+        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain,"
+                                  "after error filtering")
+
+    # compare the k-mers collected for the two strains
 
 
 if __name__ == '__main__':
     args = parse_args()
 
-    if args.type == 'hash':
-        use_hash(args)
-    else:
-        use_trees(args)
+    main(args)
