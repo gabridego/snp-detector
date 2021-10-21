@@ -19,7 +19,7 @@ def parse_args():
 def parse_kmers(filename: str, k: int):
     kmers = {}
 
-    print(f"start reading {os.path.basename(args.path[0])}...")
+    print(f"start reading {os.path.basename(filename)}...")
     start = time.time()
     for record in Bio.SeqIO.parse(filename,
                                   "fasta"):
