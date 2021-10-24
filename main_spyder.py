@@ -58,13 +58,29 @@ plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild s
 plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain")
 
 #filtering
-filt1=filter_kmers(kmers1,threshold=5)
-filt2=filter_kmers(kmers2,threshold=5)
+filt1=filter_kmers(kmers1,threshold=18)
+filt2=filter_kmers(kmers2,threshold=18)
 
 plot_frequency(filt1, "Distribution of K-mers' number of occurrences for wild strain,"
                            "after error filtering")
+
+import matplotlib.pyplot as plt
+counts = list(kmers1.values())
+fig, ax = plt.subplots(figsize=(20, 15))
+ax.hist(counts, bins=len(set(counts)))
+ax.set_xlabel("Number of occurrences")
+ax.set_ylabel("Frequency")
+ax.set_xlim([0, 25])
+ax.set_ylim([0, 25000])
+plt.show()
+
 plot_frequency(filt2, "Distribution of K-mers' number of occurrences for mutated strain,"
                            "after error filtering")
 
-import numpy as np
-#np.sum(np.array(kmers1.values()) > 100)
+sum(x > 100 for x in kmers1.values())
+sum(x > 1000 for x in kmers1.values())
+sum(x < 15 and x>10 for x in kmers1.values())
+
+sum(x not in filt2 for x in filt1.keys())
+
+
