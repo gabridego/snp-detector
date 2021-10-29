@@ -14,6 +14,7 @@ import Bio.SeqIO
 from utils import plot_frequency
 
 k=20
+# with k=25 36197708 kmers1 and 36197979 kmers2
 filename1="data/salmonella-enterica.reads.fna"
 kmers1 = {}
 
@@ -36,9 +37,11 @@ kmers2 = {}
 
 print(f"start reading {os.path.basename(filename2)}...")
 start = time.time()
+n_reads=0
 for record in Bio.SeqIO.parse(filename2,
                               "fasta"):
     seq = str(record.seq)
+    n_reads+=1
     for i in range(len(seq) - k + 1):
         kmer = seq[i:i + k]
         if kmer not in kmers2:
@@ -54,15 +57,15 @@ def filter_kmers(kmers: Dict[str, int], threshold=1):
     return filtered_kmers
 
 # plot entire strains
-plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild strain")
-plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain")
+plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild strain,k=20")
+plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain,k=20")
 
 #filtering
-filt1=filter_kmers(kmers1,threshold=18)
-filt2=filter_kmers(kmers2,threshold=18)
+filt1=filter_kmers(kmers1,threshold=8)
+filt2=filter_kmers(kmers2,threshold=14)
 
 plot_frequency(filt1, "Distribution of K-mers' number of occurrences for wild strain,"
-                           "after error filtering")
+                           "after error filtering, k=20, filt=8")
 
 import matplotlib.pyplot as plt
 counts = list(kmers1.values())
@@ -72,15 +75,67 @@ ax.set_xlabel("Number of occurrences")
 ax.set_ylabel("Frequency")
 ax.set_xlim([0, 25])
 ax.set_ylim([0, 25000])
+ax.set_title("wild strain zoom, fliter=8, k=20")
+plt.show()
+
+import matplotlib.pyplot as plt
+counts = list(kmers2.values())
+fig, ax = plt.subplots(figsize=(20, 15))
+ax.hist(counts, bins=len(set(counts)))
+ax.set_xlabel("Number of occurrences")
+ax.set_ylabel("Frequency")
+ax.set_xlim([0, 25])
+ax.set_ylim([0, 25000])
+ax.set_title("mutate strain zoom, fliter=8, k=20")
 plt.show()
 
 plot_frequency(filt2, "Distribution of K-mers' number of occurrences for mutated strain,"
-                           "after error filtering")
+                           "after error filtering, filt=8,k=20")
 
-sum(x > 100 for x in kmers1.values())
+sum(x == 2 for x in kmers1.values())
+sum(x == 3 for x in kmers1.values())
+sum(x == 4 for x in kmers1.values())
+sum(x == 5 for x in kmers1.values())
+sum(x == 6 for x in kmers1.values())
 sum(x > 1000 for x in kmers1.values())
-sum(x < 15 and x>10 for x in kmers1.values())
-
+sum(x < 12 and x>3 for x in kmers1.values())
 sum(x not in filt2 for x in filt1.keys())
+sum(x not in filt1 for x in filt2.keys())
+
+# k=20, f=12 ==> 85 and 65
+# k=20, f=10 ==> 44 and 158
+# k=20, f1= 10, f2=14 ==> 44 and 138
+# k=20, f1=9, f2=14 ==> 44 and 105
+# k=20, f1=8, f2=13 ==> 47 and 88
+
+def opt_f(kmers1,kmers2):
+    minimum=1000000
+    f1_opt=0
+    f2_opt=0
+    f2_dict={}
+    for f1 in range(3,16):
+        filt1=filter_kmers(kmers1,threshold=f1)
+        for f2 in range(3,16):
+            if f2 not in f2_dict:
+                f2_dict[f2]=filter_kmers(kmers2,threshold=f2)
+            filt2=f2_dict[f2]
+            np1=sum(x not in filt2 for x in filt1.keys())
+            np2=sum(x not in filt1 for x in filt2.keys())
+            if abs(np1-np2)+(np1+np2)<minimum:
+                minimum=abs(np1-np2)+(np1+np2)
+                f1_opt=f1
+                f2_opt=f2
+    return(f1_opt,f2_opt,minimum)
+
+f1_opt,f2_opt,minimum=opt_f(kmers1,kmers2)
+                
+"""
+Results of minimization:
+    minimum=136
+    f1_opt=8
+    f2_opt=14
+"""
+
+
 
 
