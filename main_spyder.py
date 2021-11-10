@@ -8,6 +8,7 @@ import argparse
 import os
 import time
 from typing import Dict
+import pickle
 
 import Bio.SeqIO
 
@@ -17,6 +18,9 @@ k=20
 # with k=25 36197708 kmers1 and 36197979 kmers2
 filename1="data/salmonella-enterica.reads.fna"
 kmers1 = {}
+
+with open("../data/salmonella-enterica_20.pickle", 'rb') as f:
+    kmers1 = pickle.load(f)
 
 print(f"start reading {os.path.basename(filename1)}...")
 start = time.time()
@@ -32,8 +36,11 @@ end = time.time()
 
 print(f"{len(kmers1)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
-filename2="data/salmonella-enterica-variant.reads.fna"
+filename2="../data/salmonella-enterica-variant.reads.fna"
 kmers2 = {}
+
+with open("../data/salmonella-enterica-variant_20.pickle", 'rb') as f:
+    kmers2 = pickle.load(f)
 
 print(f"start reading {os.path.basename(filename2)}...")
 start = time.time()
@@ -53,7 +60,7 @@ print(f"{len(kmers2)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
 def filter_kmers(kmers: Dict[str, int], threshold=1):
     filtered_kmers = {k: v for k, v in kmers.items() if v > threshold}
-    print(f"{len(kmers)} {len(list(kmers.keys())[0])}-mers kept after filtering (threshold={threshold})")
+    print(f"{len(filtered_kmers)} {len(list(kmers.keys())[0])}-mers kept after filtering (threshold={threshold})")
     return filtered_kmers
 
 # plot entire strains
@@ -61,8 +68,10 @@ plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild s
 plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain,k=20")
 
 #filtering
-filt1=filter_kmers(kmers1,threshold=8)
-filt2=filter_kmers(kmers2,threshold=14)
+#filt1=filter_kmers(kmers1,threshold=8)
+#filt2=filter_kmers(kmers2,threshold=14)
+filt1=filter_kmers(kmers1,threshold=3)
+filt2=filter_kmers(kmers2,threshold=3)
 
 plot_frequency(filt1, "Distribution of K-mers' number of occurrences for wild strain,"
                            "after error filtering, k=20, filt=8")
@@ -136,6 +145,33 @@ Results of minimization:
     f2_opt=14
 """
 
+## build reads from kmers that are only in one of the two strains
+## this should allow us to keep some sequencing errors, at the end kmers with error will not be merged and can be deleted safely
+## only check first and last k characters, to deal with already merged sequences
+only1 = [kmer for kmer in filt1 if kmer not in filt2]
+only2 = [kmer for kmer in filt2 if kmer not in filt1]
 
-
-
+for only in [only1, only2]:
+    z = ""
+    # z is None when no more sequences can be merged
+    while z is not None:
+        z = None
+        for x in only:
+            for y in only:
+                if x != y:
+                    # y stars with x
+                    if x[:k-1] == y[len(y)-k+1:]:
+                        z = y + x[k-1:]
+                    # x starts with y
+                    elif x[len(x)-k+1:] == y[:k-1]:
+                        z = x + y[k-1:]
+                        
+                    # if the two sequences are concatenated, they can be removed from the list and the resulting sequence is inserted
+                    if z is not None:
+                        only.remove(x)
+                        only.remove(y)
+                        # insert at the beginning, may be more efficient
+                        only.insert(0, z)
+                        break
+            if z is not None:
+                break
