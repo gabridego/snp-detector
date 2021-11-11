@@ -14,12 +14,12 @@ import Bio.SeqIO
 
 from utils import plot_frequency
 
-k=20
+k=50
 # with k=25 36197708 kmers1 and 36197979 kmers2
-filename1="data/salmonella-enterica.reads.fna"
+filename1="../data/salmonella-enterica.reads.fna"
 kmers1 = {}
 
-with open("../data/salmonella-enterica_20.pickle", 'rb') as f:
+with open("../data/salmonella-enterica_50.pickle", 'rb') as f:
     kmers1 = pickle.load(f)
 
 print(f"start reading {os.path.basename(filename1)}...")
@@ -39,7 +39,7 @@ print(f"{len(kmers1)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 filename2="../data/salmonella-enterica-variant.reads.fna"
 kmers2 = {}
 
-with open("../data/salmonella-enterica-variant_20.pickle", 'rb') as f:
+with open("../data/salmonella-enterica-variant_50.pickle", 'rb') as f:
     kmers2 = pickle.load(f)
 
 print(f"start reading {os.path.basename(filename2)}...")
@@ -56,6 +56,9 @@ for record in Bio.SeqIO.parse(filename2,
         kmers2[kmer] += 1
 end = time.time()
 
+with open("../data/salmonella-enterica-variant_50.pickle", 'wb') as f:
+    pickle.dump(kmers2, f)
+
 print(f"{len(kmers2)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
 def filter_kmers(kmers: Dict[str, int], threshold=1):
@@ -65,13 +68,13 @@ def filter_kmers(kmers: Dict[str, int], threshold=1):
 
 # plot entire strains
 plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild strain,k=20")
-plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain,k=20")
+plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain,k=50")
 
 #filtering
 #filt1=filter_kmers(kmers1,threshold=8)
 #filt2=filter_kmers(kmers2,threshold=14)
-filt1=filter_kmers(kmers1,threshold=3)
-filt2=filter_kmers(kmers2,threshold=3)
+filt1=filter_kmers(kmers1,threshold=5)
+filt2=filter_kmers(kmers2,threshold=5)
 
 plot_frequency(filt1, "Distribution of K-mers' number of occurrences for wild strain,"
                            "after error filtering, k=20, filt=8")
@@ -175,3 +178,9 @@ for only in [only1, only2]:
                         break
             if z is not None:
                 break
+
+only1.sort(reverse=True, key=lambda x: len(x))
+only2.sort(reverse=True, key=lambda x: len(x))
+
+print(only1)
+print(only2)
