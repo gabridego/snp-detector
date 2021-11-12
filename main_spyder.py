@@ -16,7 +16,7 @@ from utils import plot_frequency
 
 k=50
 # with k=25 36197708 kmers1 and 36197979 kmers2
-filename1="../data/salmonella-enterica.reads.fna"
+filename1="data/salmonella-enterica.reads.fna"
 kmers1 = {}
 
 with open("../data/salmonella-enterica_50.pickle", 'rb') as f:
@@ -36,7 +36,7 @@ end = time.time()
 
 print(f"{len(kmers1)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
-filename2="../data/salmonella-enterica-variant.reads.fna"
+filename2="data/salmonella-enterica-variant.reads.fna"
 kmers2 = {}
 
 with open("../data/salmonella-enterica-variant_50.pickle", 'rb') as f:
@@ -56,8 +56,8 @@ for record in Bio.SeqIO.parse(filename2,
         kmers2[kmer] += 1
 end = time.time()
 
-with open("../data/salmonella-enterica-variant_50.pickle", 'wb') as f:
-    pickle.dump(kmers2, f)
+with open("data/salmonella-enterica_50.pickle", 'wb') as f:
+    pickle.dump(kmers1, f)
 
 print(f"{len(kmers2)} {k}-mers extracted in {round(end - start, 2)} seconds.")
 
@@ -67,17 +67,17 @@ def filter_kmers(kmers: Dict[str, int], threshold=1):
     return filtered_kmers
 
 # plot entire strains
-plot_frequency(kmers1, "Distribution of K-mers' number of occurrences for wild strain,k=20")
-plot_frequency(kmers2, "Distribution of K-mers' number of occurrences for mutate strain,k=50")
+plot_frequency(kmers1, f"Distribution of K-mers' number of occurrences for wild strain,k={k}")
+plot_frequency(kmers2, f"Distribution of K-mers' number of occurrences for mutate strain,k={k}")
 
 #filtering
 #filt1=filter_kmers(kmers1,threshold=8)
 #filt2=filter_kmers(kmers2,threshold=14)
-filt1=filter_kmers(kmers1,threshold=5)
-filt2=filter_kmers(kmers2,threshold=5)
+filt1=filter_kmers(kmers1,threshold=10)
+filt2=filter_kmers(kmers2,threshold=8)
 
-plot_frequency(filt1, "Distribution of K-mers' number of occurrences for wild strain,"
-                           "after error filtering, k=20, filt=8")
+plot_frequency(filt1, f"Distribution of K-mers' number of occurrences for wild strain,"
+                           f"after error filtering, k={k}, filt=8")
 
 import matplotlib.pyplot as plt
 counts = list(kmers1.values())
@@ -86,7 +86,7 @@ ax.hist(counts, bins=len(set(counts)))
 ax.set_xlabel("Number of occurrences")
 ax.set_ylabel("Frequency")
 ax.set_xlim([0, 25])
-ax.set_ylim([0, 25000])
+ax.set_ylim([0,100])
 ax.set_title("wild strain zoom, fliter=8, k=20")
 plt.show()
 
@@ -97,12 +97,12 @@ ax.hist(counts, bins=len(set(counts)))
 ax.set_xlabel("Number of occurrences")
 ax.set_ylabel("Frequency")
 ax.set_xlim([0, 25])
-ax.set_ylim([0, 25000])
+ax.set_ylim([0, 100])
 ax.set_title("mutate strain zoom, fliter=8, k=20")
 plt.show()
 
-plot_frequency(filt2, "Distribution of K-mers' number of occurrences for mutated strain,"
-                           "after error filtering, filt=8,k=20")
+plot_frequency(filt2, f"Distribution of K-mers' number of occurrences for mutated strain,"
+                           f"after error filtering, filt=8,k={k}")
 
 sum(x == 2 for x in kmers1.values())
 sum(x == 3 for x in kmers1.values())
@@ -184,3 +184,27 @@ only2.sort(reverse=True, key=lambda x: len(x))
 
 print(only1)
 print(only2)
+
+print("Detected SNPs:")
+for x in only1:
+    best_dist = float('inf')
+    for y in only2:
+        dist = levenshteinDistance(x, y)
+        if dist < best_dist:
+            best_string = y
+            best_dist = dist
+    
+    if best_dist < 10:
+        x = list(x)
+        best_string = list(best_string)
+        for i, (c1, c2) in enumerate(zip(x, best_string)):
+            x[i] = c1
+            best_string[i] = c2
+            if c1 != c2:
+                x[i] += "\u0332"
+                best_string[i] += "\u0332"
+        x = "".join(x)
+        best_string = "".join(best_string)
+        
+        print(f"{x} -->\n{best_string}\ndistance = {best_dist}")
+        print()
