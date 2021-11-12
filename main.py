@@ -5,6 +5,8 @@ import time
 from typing import Dict, List
 
 import Bio.SeqIO
+from colorama import init
+from termcolor import colored
 
 from utils import plot_frequency, levenshteinDistance
 
@@ -105,6 +107,7 @@ def get_unique_kmers(kmers1: Dict[str, int], kmers2: Dict[str, int], k: int, sor
 
 
 def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10):
+    print()
     print("Detected SNPs:")
     for x in sequences1:
         best_dist = float('inf')
@@ -115,18 +118,23 @@ def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10
                 best_dist = dist
 
         if best_dist < threshold:
-            x = list(x)
-            best_string = list(best_string)
+            snp_pos = []
             for i, (c1, c2) in enumerate(zip(x, best_string)):
-                x[i] = c1
-                best_string[i] = c2
                 if c1 != c2:
-                    x[i] += "\u0332"
-                    best_string[i] += "\u0332"
-            x = "".join(x)
-            best_string = "".join(best_string)
+                    snp_pos.append(i)
 
-            print(f"{x} -->\n{best_string}\ndistance = {best_dist}")
+            for i, c in enumerate(x):
+                if i in snp_pos:
+                    print(colored(c, 'red'), end='')
+                else:
+                    print(c, end='')
+            print(" -->")
+            for i, c in enumerate(best_string):
+                if i in snp_pos:
+                    print(colored(c, 'red'), end='')
+                else:
+                    print(c, end='')
+            print(f"\ndistance = {best_dist}")
             print()
 
 
@@ -186,6 +194,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+    init()
     args = parse_args()
     verify_args(args)
 
