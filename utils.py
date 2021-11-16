@@ -15,7 +15,7 @@ def plot_frequency(kmers: Dict[str, int], title=None):
     plt.show()
 
 
-def levenshteinDistance(token1, token2):
+def levenshtein_distance(token1, token2):
     # https://blog.paperspace.com/implementing-levenshtein-distance-word-autocomplete-autocorrect/
     distances = np.zeros((len(token1) + 1, len(token2) + 1))
 

@@ -8,7 +8,7 @@ import Bio.SeqIO
 from colorama import init
 from termcolor import colored
 
-from utils import plot_frequency, levenshteinDistance
+from utils import plot_frequency, levenshtein_distance
 
 
 def parse_args():
@@ -112,7 +112,7 @@ def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10
     for x in sequences1:
         best_dist = float('inf')
         for y in sequences2:
-            dist = levenshteinDistance(x, y)
+            dist = levenshtein_distance(x, y)
             if dist < best_dist:
                 best_string = y
                 best_dist = dist
