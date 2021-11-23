@@ -17,7 +17,7 @@ def parse_args():
                         help='Paths to FASTA files (or to stored binary files if -l)')
     parser.add_argument('-k', type=int, nargs='?', default=20,
                         help='Length of patterns')
-    parser.add_argument('-f', '--filtering-threshold', type=int, nargs='?', default=1,
+    parser.add_argument('-f', '--filtering-threshold', type=int, nargs='?',
                         help='Threshold for K-mers filtering')
     parser.add_argument('-d', '--distance-threshold', type=int, nargs='?', default=10,
                         help='Threshold for Levenshtein distance')
@@ -157,10 +157,14 @@ def main(args):
             with open(filename, 'wb') as f:
                 pickle.dump(wild_kmers, f)
 
-    if args.visualize:
+    if args.visualize or args.filtering_threshold is None:
         plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain")
 
-    filter_kmers(wild_kmers, args.filtering_threshold)
+    if args.filtering_threshold is None:
+        thres = int(input("Select filtering threshold for wild strain: "))
+    else:
+        thres = args.filtering_threshold
+    filter_kmers(wild_kmers, thres)
 
     if args.visualize:
         plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain,"
@@ -179,10 +183,14 @@ def main(args):
             with open(filename, 'wb') as f:
                 pickle.dump(mut_kmers, f)
 
-    if args.visualize:
+    if args.visualize or args.filtering_threshold is None:
         plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain")
 
-    filter_kmers(mut_kmers, args.filtering_threshold)
+    if args.filtering_threshold is None:
+        thres = int(input("Select filtering threshold for mutated strain: "))
+    else:
+        thres = args.filtering_threshold
+    filter_kmers(mut_kmers, thres)
 
     if args.visualize:
         plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain,"

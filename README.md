@@ -46,14 +46,14 @@ To store the dictionaries computed in the run:
 python main.py -p data/salmonella-enterica.reads.fna data/salmonella-enterica-variant.reads.fna -k 20 -v -s
 ``
 
-This will create two binary files, called `data/salmonella-enterica.reads_20.fna` and
-`data/salmonella-enterica-variant.reads_20.fna` (`20` as the provided `k`).
+This will create two binary files, called `data/salmonella-enterica.reads_20.pickle` and
+`data/salmonella-enterica-variant.reads_20.pickle` (`20` as the provided `k`).
 
 #### Load
 To load a previously stored binary file:
 
 ``
-python main.py -p data/salmonella-enterica_20.reads.fna data/salmonella-enterica-variant_20.reads.fna -k 20 -v -l
+python main.py -p data/salmonella-enterica.reads_20.pickle data/salmonella-enterica-variant.reads_20.pickle -k 20 -v -l
 ``
 
 ## Data
