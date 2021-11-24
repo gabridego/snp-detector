@@ -4,10 +4,12 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def plot_frequency(kmers: Dict[str, int], title=None):
+def plot_frequency(kmers: Dict[str, int], title=None, log=False):
     counts = list(kmers.values())
     _, ax = plt.subplots(figsize=(20, 15))
-    ax.hist(counts, bins=len(set(counts)))
+    ax.hist(counts, bins=len(set(counts)), log=log)
+    ax.xaxis.set_major_locator(plt.MultipleLocator(10))
+    ax.set_xlim()
     ax.set_xlabel("Number of occurrences")
     ax.set_ylabel("Frequency")
     if title:

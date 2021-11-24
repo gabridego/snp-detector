@@ -7,7 +7,7 @@ value is the number of occurrences in the full file. The number of occurrences o
 in constant time.
 
 ``
-python main.py -p data/salmonella-enterica.reads.fna data/salmonella-enterica-variant.reads.fna -k 20 -f 5 -v
+python main.py -p data/salmonella-enterica.reads.fna data/salmonella-enterica-variant.reads.fna -k 50 -f 10 -v
 ``
 
 ### Command line interface
@@ -24,12 +24,12 @@ optional arguments:
                         Paths to FASTA files (or to stored binary files if -l)
   -k [K]                Length of patterns
   -f [FILTERING_THRESHOLD], --filtering-threshold [FILTERING_THRESHOLD]
-                        Threshold for K-mers filtering
+                        Threshold for k-mers filtering
   -d [DISTANCE_THRESHOLD], --distance-threshold [DISTANCE_THRESHOLD]
                         Threshold for Levenshtein distance
   -v, --visualize       Plot intermediate results
-  -s, --save            Save collected kmers
-  -l, --load            Load collected kmers
+  -s, --save            Save collected k-mers
+  -l, --load            Load collected k-mers
 ```
 
 ### Storing and loading dictionaries

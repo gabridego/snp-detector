@@ -18,15 +18,15 @@ def parse_args():
     parser.add_argument('-k', type=int, nargs='?', default=20,
                         help='Length of patterns')
     parser.add_argument('-f', '--filtering-threshold', type=int, nargs='?',
-                        help='Threshold for K-mers filtering')
+                        help='Threshold for k-mers filtering')
     parser.add_argument('-d', '--distance-threshold', type=int, nargs='?', default=10,
                         help='Threshold for Levenshtein distance')
     parser.add_argument('-v', '--visualize', default=False, action='store_true',
                         help='Plot intermediate results')
     parser.add_argument('-s', '--save', default=False, action='store_true',
-                        help='Save collected kmers')
+                        help='Save collected k-mers')
     parser.add_argument('-l', '--load', default=False, action='store_true',
-                        help='Load collected kmers')
+                        help='Load collected k-mers')
     return parser.parse_args()
 
 
@@ -107,6 +107,7 @@ def get_unique_kmers(kmers1: Dict[str, int], kmers2: Dict[str, int], k: int, sor
 
 
 def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10):
+    count = 0
     print()
     print("Detected SNPs:")
     for x in sequences1:
@@ -118,17 +119,21 @@ def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10
                 best_dist = dist
 
         if best_dist < threshold:
+            count += 1
+            print(f"SNP {count}:")
             snp_pos = []
             for i, (c1, c2) in enumerate(zip(x, best_string)):
                 if c1 != c2:
                     snp_pos.append(i)
 
+            print("Wild")
             for i, c in enumerate(x):
                 if i in snp_pos:
                     print(colored(c, 'red'), end='')
                 else:
                     print(c, end='')
-            print(" -->")
+            print("\n-->")
+            print("Mutated")
             for i, c in enumerate(best_string):
                 if i in snp_pos:
                     print(colored(c, 'red'), end='')
@@ -158,7 +163,8 @@ def main(args):
                 pickle.dump(wild_kmers, f)
 
     if args.visualize or args.filtering_threshold is None:
-        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain")
+        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain (in log scale)",
+                       log=True)
 
     if args.filtering_threshold is None:
         thres = int(input("Select filtering threshold for wild strain: "))
@@ -184,7 +190,8 @@ def main(args):
                 pickle.dump(mut_kmers, f)
 
     if args.visualize or args.filtering_threshold is None:
-        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain")
+        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain (in log scale)",
+                       log=True)
 
     if args.filtering_threshold is None:
         thres = int(input("Select filtering threshold for mutated strain: "))
