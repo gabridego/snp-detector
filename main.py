@@ -13,11 +13,13 @@ from utils import plot_frequency, levenshtein_distance
 
 def parse_args():
     parser = argparse.ArgumentParser(description="SNP detector")
-    parser.add_argument('-p', '--path', nargs=2,
+    parser.add_argument('-p', '--path', type=str, nargs=2,
                         help='Paths to FASTA files (or to stored binary files if -l)')
+    parser.add_argument('-f', '--format', type=str, nargs='?', default='fasta',
+                        help='Sequencing file format for Biopython')
     parser.add_argument('-k', type=int, nargs='?', default=20,
-                        help='Length of patterns')
-    parser.add_argument('-f', '--filtering-threshold', type=int, nargs='?',
+                        help='Length of k-mers')
+    parser.add_argument('-t', '--filtering-threshold', type=int, nargs='?',
                         help='Threshold for k-mers filtering')
     parser.add_argument('-d', '--distance-threshold', type=int, nargs='?', default=10,
                         help='Threshold for Levenshtein distance')
@@ -34,17 +36,17 @@ def verify_args(args):
     if args.save and args.load:
         raise ValueError("-s and -l cannot be used at the same time")
 
-    if args.load and (args.path[0].endswith('.fna') or args.path[1].endswith('.fna')):
-        raise ValueError("in load mode, program expects binary files, not FASTA")
+    if args.load and (not args.path[0].endswith('.pickle') or not args.path[1].endswith('.pickle')):
+        raise ValueError("in load mode, program expects binary files, not sequences")
 
 
-def parse_kmers(filename: str, k: int):
+def parse_kmers(filename: str, k: int, format: str):
     kmers = {}
 
     print(f"start reading {os.path.basename(filename)}...")
     start = time.time()
     for record in Bio.SeqIO.parse(filename,
-                                  "fasta"):
+                                  format=format):
         seq = str(record.seq)
         for i in range(len(seq) - k + 1):
             kmer = seq[i:i + k]
@@ -144,18 +146,15 @@ def print_snps(sequences1: List[str], sequences2: List[str], threshold: int = 10
 
 
 def main(args):
-    """
-    Collect patterns of length K, counting them in an hash table (dictionary)
-    """
     k = args.k
 
-    # read and filter wild strain
+    # read and filter k-mers from wild strain
     if args.load:
         print(f"Load wild kmers from {args.path[0]}...")
         with open(args.path[0], 'rb') as f:
             wild_kmers = pickle.load(f)
     else:
-        wild_kmers = parse_kmers(args.path[0], k)
+        wild_kmers = parse_kmers(args.path[0], k, args.format)
         if args.save:
             filename = os.path.splitext(args.path[0])[0] + '_' + str(args.k) + '.pickle'
             print(f"Store wild kmers in {filename}...")
@@ -176,13 +175,13 @@ def main(args):
         plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain,"
                                    "after error filtering")
 
-    # read and filter mutated strain
+    # read and filter k-mers from mutated strain
     if args.load:
         print(f"Load mutated kmers from {args.path[1]}...")
         with open(args.path[1], 'rb') as f:
             mut_kmers = pickle.load(f)
     else:
-        mut_kmers = parse_kmers(args.path[1], k)
+        mut_kmers = parse_kmers(args.path[1], k, args.format)
         if args.save:
             filename = os.path.splitext(args.path[1])[0] + '_' + str(args.k) + '.pickle'
             print(f"Store mutated kmers in {filename}...")
@@ -203,8 +202,10 @@ def main(args):
         plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain,"
                                   "after error filtering")
 
+    # discard k-mers common to the two strains
     only_wild, only_mut = get_unique_kmers(wild_kmers, mut_kmers, k)
 
+    # output SNPs according to Levenshtein distance
     print_snps(only_wild, only_mut, args.distance_threshold)
 
 

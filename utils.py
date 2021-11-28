@@ -1,10 +1,10 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from matplotlib import pyplot as plt
 import numpy as np
 
 
-def plot_frequency(kmers: Dict[str, int], title=None, log=False):
+def plot_frequency(kmers: Dict[str, int], title: Optional[str] = None, log: bool = False):
     counts = list(kmers.values())
     _, ax = plt.subplots(figsize=(20, 15))
     ax.hist(counts, bins=len(set(counts)), log=log)
@@ -17,7 +17,7 @@ def plot_frequency(kmers: Dict[str, int], title=None, log=False):
     plt.show()
 
 
-def levenshtein_distance(token1, token2):
+def levenshtein_distance(token1: str, token2: str):
     # https://blog.paperspace.com/implementing-levenshtein-distance-word-autocomplete-autocorrect/
     distances = np.zeros((len(token1) + 1, len(token2) + 1))
 
@@ -33,16 +33,16 @@ def levenshtein_distance(token1, token2):
     
     for t1 in range(1, len(token1) + 1):
         for t2 in range(1, len(token2) + 1):
-            if (token1[t1-1] == token2[t2-1]):
+            if token1[t1 - 1] == token2[t2 - 1]:
                 distances[t1][t2] = distances[t1 - 1][t2 - 1]
             else:
                 a = distances[t1][t2 - 1]
                 b = distances[t1 - 1][t2]
                 c = distances[t1 - 1][t2 - 1]
                 
-                if (a <= b and a <= c):
+                if a <= b and a <= c:
                     distances[t1][t2] = a + 1
-                elif (b <= a and b <= c):
+                elif b <= a and b <= c:
                     distances[t1][t2] = b + 1
                 else:
                     distances[t1][t2] = c + 1
