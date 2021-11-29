@@ -172,7 +172,7 @@ def main(args):
     filter_kmers(wild_kmers, thres)
 
     if args.visualize:
-        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain,"
+        plot_frequency(wild_kmers, "Distribution of K-mers' number of occurrences for wild strain, "
                                    "after error filtering")
 
     # read and filter k-mers from mutated strain
@@ -199,7 +199,7 @@ def main(args):
     filter_kmers(mut_kmers, thres)
 
     if args.visualize:
-        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain,"
+        plot_frequency(mut_kmers, "Distribution of K-mers' number of occurrences for mutated strain, "
                                   "after error filtering")
 
     # discard k-mers common to the two strains
