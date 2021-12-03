@@ -9,7 +9,6 @@ def plot_frequency(kmers: Dict[str, int], title: Optional[str] = None, log: bool
     _, ax = plt.subplots(figsize=(20, 15))
     ax.hist(counts, bins=len(set(counts)), log=log)
     ax.xaxis.set_major_locator(plt.MultipleLocator(10))
-    ax.set_xlim()
     ax.set_xlabel("Number of occurrences")
     ax.set_ylabel("Frequency")
     if title:
@@ -26,10 +25,6 @@ def levenshtein_distance(token1: str, token2: str):
 
     for t2 in range(len(token2) + 1):
         distances[0][t2] = t2
-        
-    a = 0
-    b = 0
-    c = 0
     
     for t1 in range(1, len(token1) + 1):
         for t2 in range(1, len(token2) + 1):
